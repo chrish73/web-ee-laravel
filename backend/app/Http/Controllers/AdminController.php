@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Rule;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
