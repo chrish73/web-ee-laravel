@@ -10,10 +10,6 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
-    // HAPUS KONSTRUKTOR YANG BERMASALAH
-    // Logika Role Check akan dipindahkan ke routes/api.php
-    // public function __construct() { ... }
-
     // --- Manajemen User (Anggota & Staf) ---
     public function getAllUsers()
     {
@@ -94,23 +90,27 @@ class AdminController extends Controller
         $user->role = 'anggota';
         $user->save();
 
+        // Hapus semua jadwal staf saat demote
         $user->schedules()->delete();
 
         return response()->json(['message' => 'Staff demoted to Member successfully.', 'user' => $user->only(['id', 'name', 'email', 'role'])]);
     }
 
-    // --- Manajemen Jadwal (Khusus untuk Staf) ---
+    // --- Manajemen Jadwal (Admin View) ---
 
     public function getAllSchedules()
     {
+        // Admin melihat semua jadwal
         $schedules = Schedule::with('user:id,name,role')->orderBy('scheduled_start', 'desc')->get();
         return response()->json($schedules);
     }
 
     public function getStaffSchedules($staffId)
     {
+        // Admin melihat jadwal staf tertentu
         $staff = User::where('id', $staffId)->whereIn('role', ['staf', 'admin'])->firstOrFail();
 
+        // Mengurutkan berdasarkan waktu mulai terjadwal
         $schedules = $staff->schedules()->orderBy('scheduled_start', 'asc')->get();
         return response()->json(['staff' => $staff->only(['id', 'name', 'role']), 'schedules' => $schedules]);
     }
@@ -152,5 +152,24 @@ class AdminController extends Controller
         Schedule::findOrFail($scheduleId)->delete();
 
         return response()->json(['message' => 'Schedule deleted successfully.']);
+    }
+
+    // --- Jadwal Staf (Staff View) ---
+
+    /**
+     * Mengambil jadwal hanya untuk user (staf/admin) yang sedang login.
+     * Dipanggil melalui rute /api/staf/schedules
+     */
+    public function getMySchedules(Request $request)
+    {
+        // Mengambil user ID dari token yang sedang login
+        $userId = $request->user()->id;
+
+        // Mengambil jadwal yang ditetapkan untuk ID user ini, diurutkan berdasarkan tanggal/waktu mulai
+        $schedules = Schedule::where('user_id', $userId)
+                             ->orderBy('scheduled_start', 'asc') // Menggunakan 'scheduled_start' untuk konsistensi
+                             ->get();
+
+        return response()->json(['schedules' => $schedules]);
     }
 }
