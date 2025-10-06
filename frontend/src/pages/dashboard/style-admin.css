@@ -143,6 +143,7 @@ body {
 /* ===== MODERN TABLE ===== */
 .modern-table {
   margin-bottom: 0;
+  width: 100%;
 }
 
 .modern-table thead {
@@ -332,6 +333,8 @@ body {
 .table-responsive {
   border-radius: 8px;
   overflow-x: auto;
+  max-width: 100%;
+  white-space: nowrap;
 }
 
 /* ===== ANIMATIONS ===== */
@@ -423,7 +426,8 @@ body {
 
   .modern-table thead th,
   .modern-table tbody td {
-    padding: 0.75rem 0.5rem;
+    padding: 1.25rem 1.5rem;
+    font-size: 0.9rem;
   }
 
   .content-card .card-body {
@@ -577,6 +581,7 @@ body {
   color: #065f46;
   border: none;
 }
+
 
 .alert-success i {
   font-size: 1.25rem;
