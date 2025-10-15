@@ -40,22 +40,27 @@ class PostController extends Controller
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:32000',
             'is_public' => 'boolean',
         ]);
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('public/posts');
+            // Store file di storage/app/public/posts
+            // Dan simpan path relatifnya (posts/filename.jpg)
+            $imagePath = $request->file('image')->store('posts', 'public');
         }
 
         $post = Post::create([
             'user_id' => $request->user()->id,
             'title' => $validatedData['title'],
             'content' => $validatedData['content'],
-            'image_path' => $imagePath,
+            'image_path' => $imagePath, // Simpan: "posts/filename.jpg"
             'is_public' => $validatedData['is_public'] ?? true,
         ]);
+
+        // Load relasi untuk response
+        $post->load(['user:id,name,role', 'comments']);
 
         return response()->json(['message' => 'Pengumuman berhasil diposting.', 'post' => $post], 201);
     }
@@ -69,8 +74,9 @@ class PostController extends Controller
             return response()->json(['message' => 'Forbidden. Anda tidak memiliki akses untuk menghapus post ini.'], 403);
         }
 
-        if ($post->image_path) {
-            Storage::delete($post->image_path);
+        // Hapus file gambar jika ada
+        if ($post->image_path && Storage::disk('public')->exists($post->image_path)) {
+            Storage::disk('public')->delete($post->image_path);
         }
 
         $post->delete();

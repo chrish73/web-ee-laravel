@@ -1,9 +1,10 @@
 // login-form-user.js
 
 import React, { useState } from "react";
-import axios from "axios";
+// import axios from "axios";
 import { useNavigate } from "react-router-dom"; // PENTING: Import useNavigate
 import "./style.css";
+import api from "../../api";
 
 // Fungsi Helper untuk menentukan rute dashboard berdasarkan role
 const getDashboardPath = (role) => {
@@ -36,7 +37,7 @@ function LoginForm() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post("http://localhost:8000/api/login", formData);
+            const res = await api.post("/login", formData);
 
             // --- PERUBAHAN UTAMA DI SINI ---
             const token = res.data.access_token;
@@ -116,7 +117,8 @@ function LoginForm() {
                 </form>
 
                 <p>
-                    Belum punya akun? <a href="/Register">Daftar di sini.</a>
+                    Belum punya akun? <a href="/Register">Daftar di sini.</a><br></br>
+                    <a href="/">Kembali ke beranda</a>
                 </p>
             </div>
         </div>

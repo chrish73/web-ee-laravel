@@ -13,7 +13,7 @@ Route::get('posts', [PostController::class, 'getPublicPosts']); // Postingan unt
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user', [AuthController::class, 'user']);
+    Route::get('/me', [AuthController::class, 'user']);
 
     // =======================================================
     // --- Rute KHUSUS ADMIN (Perlu Autentikasi & Role Admin) ---
@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Update & Delete jadwal
         Route::put('schedules/{scheduleId}', [AdminController::class, 'updateSchedule']);
         Route::delete('schedules/{scheduleId}', [AdminController::class, 'deleteSchedule']);
+        Route::delete('posts/{postId}', [PostController::class, 'deletePost']);
     });
 
     // =======================================================

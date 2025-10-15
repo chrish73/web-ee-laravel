@@ -1,3 +1,4 @@
+// frontend/src/pages/dashboard/LandingPage.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
@@ -9,6 +10,7 @@ const LandingPage = () => {
   const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("userRole");
   const [publicPosts, setPublicPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (token && userRole) {
@@ -30,11 +32,14 @@ const LandingPage = () => {
 
   useEffect(() => {
     const fetchPublicPosts = async () => {
+      setLoading(true);
       try {
         const res = await api.get("/posts");
         setPublicPosts(res.data);
       } catch (err) {
         console.error("Failed to fetch posts:", err);
+      } finally {
+        setLoading(false);
       }
     };
     if (!token) fetchPublicPosts();
@@ -42,7 +47,7 @@ const LandingPage = () => {
 
   return (
     <div className="admin-wrapper">
-      {/* ===== HEADER ===== */}
+      {/* FIXED HEADER */}
       <header className="admin-header">
         <div className="container-fluid">
           <div className="d-flex justify-content-between align-items-center">
@@ -58,7 +63,8 @@ const LandingPage = () => {
                 onClick={() => navigate("/register")}
                 className="btn btn-outline-light"
               >
-                <i className="bi bi-person-add me-2"></i> Daftar
+                <i className="bi bi-person-add me-2"></i>
+                Daftar
               </button>
               <button
                 onClick={() => navigate("/login")}
@@ -72,69 +78,155 @@ const LandingPage = () => {
         </div>
       </header>
 
-      {/* ===== CONTENT ===== */}
+      {/* MAIN CONTENT */}
       <main className="admin-content">
         <div className="container">
-          <div className="content-card p-4 text-center">
-            <div className="card-header border-0 bg-transparent mb-4">
-              <h1 className="fw-bold mb-1" style={{ color: "#4031c9" }}>
+          {/* WELCOME CARD */}
+          <div className="content-card mb-4">
+            <div className="card-body text-center p-5">
+              <div className="welcome-icon mb-4">
+                <i
+                  className="bi bi-people-fill"
+                  style={{ fontSize: "4rem", color: "#4031c9" }}
+                ></i>
+              </div>
+              <h1 className="fw-bold mb-3" style={{ color: "#4031c9" }}>
                 Halaman Informasi
               </h1>
-              <p className="lead text-muted">
+              <p className="lead text-muted mb-4">
                 Silahkan bergabung untuk mendapatkan informasi lebih lanjut
+                tentang kegiatan komunitas
               </p>
+              <div className="d-flex gap-3 justify-content-center flex-wrap">
+                <button
+                  onClick={() => navigate("/register")}
+                  className="btn btn-schedule-primary btn-lg"
+                >
+                  <i className="bi bi-person-plus me-2"></i>
+                  Daftar Sekarang
+                </button>
+                <button
+                  onClick={() => navigate("/login")}
+                  className="btn btn-outline-primary btn-lg"
+                >
+                  <i className="bi bi-box-arrow-in-right me-2"></i>
+                  Masuk
+                </button>
+              </div>
             </div>
+          </div>
 
-            {/* Public Posts */}
-            {publicPosts.length > 0 && (
-              <div className="mt-4 pt-4 border-top text-start">
-                <h4 className="fw-semibold mb-3">
-                  <i
-                    className="bi bi-megaphone me-2"
-                    style={{ color: "#4031c9" }}
-                  ></i>
-                  Pengumuman Terbaru
-                </h4>
-                <div className="list-group">
+          {/* PUBLIC POSTS */}
+          {loading ? (
+            <div className="content-card">
+              <div className="card-body text-center py-5">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                <p className="text-muted mt-3">Memuat pengumuman...</p>
+              </div>
+            </div>
+          ) : publicPosts.length > 0 ? (
+            <div className="content-card">
+              <div className="card-header">
+                <h5 className="mb-0">
+                  <i className="bi bi-megaphone me-2"></i>
+                  Pengumuman Terbaru ({publicPosts.length})
+                </h5>
+              </div>
+              <div className="card-body">
+                <div className="posts-container">
                   {publicPosts.map((post) => (
-                    <div
-                      key={post.id}
-                      className="list-group-item shadow-sm mb-3 rounded-3 border-0"
-                    >
-                      <h6 className="fw-semibold mb-1">{post.title}</h6>
-                      <p
-                        className="mb-1 text-muted"
-                        style={{
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                          fontSize: "0.9rem",
-                        }}
-                      >
-                        {post.content}
-                      </p>
-                      <small className="text-primary d-block">
-                        Oleh: {post.user?.name || "Admin"}
-                      </small>
+                    <div key={post.id} className="post-card mb-3">
+                      <div className="post-header mb-3">
+                        <div className="d-flex align-items-center">
+                          <div className="user-avatar me-3">
+                            {post.user?.name?.charAt(0).toUpperCase() || "A"}
+                          </div>
+                          <div>
+                            <h6 className="fw-semibold mb-0">{post.title}</h6>
+                            <small className="text-muted">
+                              Oleh: {post.user?.name || "Admin"}
+                              <span className="badge bg-primary ms-2">
+                                {post.user?.role?.toUpperCase() || "ADMIN"}
+                              </span>
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="post-content">
+                        <p className="text-muted mb-2">{post.content}</p>
+                      </div>
+
+                      {/* Image if exists */}
+                      {post.image_path && (
+                        <div className="post-image mt-3">
+                          <img
+                            src={`http://localhost:8000/storage/${post.image_path.replace(
+                              "public/",
+                              ""
+                            )}`}
+                            alt="Post Media"
+                            className="img-fluid rounded"
+                            style={{
+                              maxHeight: "100%",
+                              objectFit: "cover",
+                              width: "100%",
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      <div className="post-footer mt-3 pt-3 border-top">
+                        <small className="text-muted">
+                          <i className="bi bi-chat-dots me-1"></i>
+                          {post.comments?.length || 0} Komentar
+                        </small>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
+            </div>
+          ) : (
+            <div className="content-card">
+              <div className="card-body">
+                <div className="empty-state">
+                  <i className="bi bi-inbox"></i>
+                  <p>Belum ada pengumuman</p>
+                  <small className="text-muted">
+                    Pengumuman akan ditampilkan di sini
+                  </small>
+                </div>
+              </div>
+            </div>
+          )}
 
-            <p className="mt-4 text-muted small">
-              Hubungi Admin jika ada masalah akses.
-            </p>
+          {/* INFO FOOTER */}
+          <div className="text-center mt-4 mb-4">
+            <div
+              className="alert alert-info d-inline-flex align-items-center"
+              style={{
+                border: "none",
+                background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+              }}
+            >
+              <i
+                className="bi bi-info-circle me-2"
+                style={{ fontSize: "1.25rem" }}
+              ></i>
+              <span>Hubungi Admin jika ada masalah akses atau pertanyaan</span>
+            </div>
           </div>
         </div>
       </main>
 
-      {/* ===== FOOTER ===== */}
+      {/* FOOTER */}
       <footer className="admin-footer">
         <div className="container-fluid text-center">
           <small className="text-muted">
-            &copy; 2025 Komunitas EE Lokal Soe
+            &copy; 2025 Komunitas EE Lokal Soe. All rights reserved.
           </small>
         </div>
       </footer>

@@ -1,4 +1,4 @@
-// frontend/src/pages/AdminPanel.js
+// frontend/src/pages/dashboard/AdminPanel.js
 
 import React, { useState, useEffect } from "react";
 import api from "../../api";
@@ -9,14 +9,34 @@ import "./style-admin.css";
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
   const [schedules, setSchedules] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState("users");
   const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [showEditScheduleModal, setShowEditScheduleModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [editingSchedule, setEditingSchedule] = useState(null);
+  const [userName, setUserName] = useState(
+    localStorage.getItem("userName") || "Admin"
+  );
   const navigate = useNavigate();
+
+  const currentUserId = localStorage.getItem("userId");
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get("/me");
+        setUserName(res.data.name);
+        localStorage.setItem("userName", res.data.name);
+      } catch (err) {
+        console.error("Gagal ambil profil:", err);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -50,9 +70,23 @@ const AdminPanel = () => {
     }
   };
 
+  const fetchPosts = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/posts");
+      setPosts(res.data);
+      setError(null);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch posts.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "users") fetchUsers();
     else if (activeTab === "schedules") fetchSchedules();
+    else if (activeTab === "posts") fetchPosts();
   }, [activeTab]);
 
   const handlePromote = async (id) => {
@@ -67,10 +101,10 @@ const AdminPanel = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      alert("User berhasil diangkat menjadi Staf!");
+      setMessage("User berhasil diangkat menjadi Staf!");
       fetchUsers();
     } catch (err) {
-      alert(err.response?.data?.message || "Gagal mengangkat staf.");
+      setError(err.response?.data?.message || "Gagal mengangkat staf.");
     }
   };
 
@@ -86,10 +120,10 @@ const AdminPanel = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      alert("Staf berhasil diturunkan menjadi Anggota!");
+      setMessage("Staf berhasil diturunkan menjadi Anggota!");
       fetchUsers();
     } catch (err) {
-      alert(err.response?.data?.message || "Gagal menurunkan staf.");
+      setError(err.response?.data?.message || "Gagal menurunkan staf.");
     }
   };
 
@@ -100,10 +134,10 @@ const AdminPanel = () => {
       await api.delete(`/admin/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      alert("User berhasil dihapus.");
+      setMessage("User berhasil dihapus.");
       fetchUsers();
     } catch (err) {
-      alert(err.response?.data?.message || "Gagal menghapus user.");
+      setError(err.response?.data?.message || "Gagal menghapus user.");
     }
   };
 
@@ -114,10 +148,32 @@ const AdminPanel = () => {
       await api.delete(`/admin/schedules/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      alert("Jadwal berhasil dihapus.");
+      setMessage("Jadwal berhasil dihapus.");
       fetchSchedules();
     } catch (err) {
-      alert(err.response?.data?.message || "Gagal menghapus jadwal.");
+      setError(err.response?.data?.message || "Gagal menghapus jadwal.");
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("Yakin ingin menghapus postingan ini?")) return;
+    try {
+      await api.delete(`/admin/posts/${postId}`);
+      setMessage("Postingan berhasil dihapus.");
+      fetchPosts();
+    } catch (err) {
+      setError(err.response?.data?.message || "Gagal menghapus postingan.");
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm("Yakin ingin menghapus komentar ini?")) return;
+    try {
+      await api.delete(`/comments/${commentId}`);
+      setMessage("Komentar berhasil dihapus.");
+      fetchPosts();
+    } catch (err) {
+      setError(err.response?.data?.message || "Gagal menghapus komentar.");
     }
   };
 
@@ -140,22 +196,26 @@ const AdminPanel = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      alert("User berhasil diupdate!");
+      setMessage("User berhasil diupdate!");
       setShowEditUserModal(false);
       fetchUsers();
     } catch (err) {
-      const errMsg = err.response?.data?.errors 
-        ? Object.values(err.response.data.errors).flat().join(" ") 
-        : (err.response?.data?.message || "Gagal mengupdate user.");
-      alert(errMsg);
+      const errMsg = err.response?.data?.errors
+        ? Object.values(err.response.data.errors).flat().join(" ")
+        : err.response?.data?.message || "Gagal mengupdate user.";
+      setError(errMsg);
     }
   };
 
   const handleEditSchedule = (schedule) => {
     setEditingSchedule({
       ...schedule,
-      scheduled_start: new Date(schedule.scheduled_start).toISOString().slice(0, 16),
-      scheduled_end: schedule.scheduled_end ? new Date(schedule.scheduled_end).toISOString().slice(0, 16) : '',
+      scheduled_start: new Date(schedule.scheduled_start)
+        .toISOString()
+        .slice(0, 16),
+      scheduled_end: schedule.scheduled_end
+        ? new Date(schedule.scheduled_end).toISOString().slice(0, 16)
+        : "",
     });
     setShowEditScheduleModal(true);
   };
@@ -176,20 +236,22 @@ const AdminPanel = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      alert("Jadwal berhasil diupdate!");
+      setMessage("Jadwal berhasil diupdate!");
       setShowEditScheduleModal(false);
       fetchSchedules();
     } catch (err) {
-      const errMsg = err.response?.data?.errors 
-        ? Object.values(err.response.data.errors).flat().join(" ") 
-        : (err.response?.data?.message || "Gagal mengupdate jadwal.");
-      alert(errMsg);
+      const errMsg = err.response?.data?.errors
+        ? Object.values(err.response.data.errors).flat().join(" ")
+        : err.response?.data?.message || "Gagal mengupdate jadwal.";
+      setError(errMsg);
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userRole");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userId");
     navigate("/login");
   };
 
@@ -197,7 +259,7 @@ const AdminPanel = () => {
     const badges = {
       admin: "badge bg-danger",
       staf: "badge bg-primary",
-      anggota: "badge bg-success"
+      anggota: "badge bg-success",
     };
     return badges[role] || "badge bg-secondary";
   };
@@ -260,7 +322,9 @@ const AdminPanel = () => {
                         <i className="bi bi-arrow-down-circle"></i> Turunkan
                       </button>
                       <button
-                        onClick={() => navigate(`/admin/schedules/manage/${user.id}`)}
+                        onClick={() =>
+                          navigate(`/admin/schedules/manage/${user.id}`)
+                        }
                         className="btn btn-sm btn-outline-primary"
                         title="Lihat Jadwal"
                       >
@@ -319,9 +383,9 @@ const AdminPanel = () => {
               <td>
                 <small className="text-muted">
                   <i className="bi bi-calendar-event me-1"></i>
-                  {new Date(schedule.scheduled_start).toLocaleString('id-ID', {
-                    dateStyle: 'short',
-                    timeStyle: 'short'
+                  {new Date(schedule.scheduled_start).toLocaleString("id-ID", {
+                    dateStyle: "short",
+                    timeStyle: "short",
                   })}
                 </small>
               </td>
@@ -330,10 +394,13 @@ const AdminPanel = () => {
                   {schedule.scheduled_end ? (
                     <>
                       <i className="bi bi-calendar-check me-1"></i>
-                      {new Date(schedule.scheduled_end).toLocaleString('id-ID', {
-                        dateStyle: 'short',
-                        timeStyle: 'short'
-                      })}
+                      {new Date(schedule.scheduled_end).toLocaleString(
+                        "id-ID",
+                        {
+                          dateStyle: "short",
+                          timeStyle: "short",
+                        }
+                      )}
                     </>
                   ) : (
                     <span className="text-secondary">-</span>
@@ -377,6 +444,107 @@ const AdminPanel = () => {
     </div>
   );
 
+  const PostsTable = () => (
+    <div className="posts-container">
+      {posts.length === 0 ? (
+        <div className="empty-state">
+          <i className="bi bi-inbox"></i>
+          <p>Belum ada postingan</p>
+        </div>
+      ) : (
+        posts.map((post) => (
+          <div key={post.id} className="post-card mb-4">
+            <div className="post-header">
+              <div className="d-flex justify-content-between align-items-start mb-3">
+                <div className="d-flex align-items-center flex-grow-1">
+                  <div className="user-avatar me-3">
+                    {post.user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h6 className="mb-0 fw-semibold">{post.title}</h6>
+                    <small className="text-muted">
+                      Oleh: {post.user.name}
+                      <span
+                        className={`badge ${getRoleBadge(post.user.role)} ms-2`}
+                      >
+                        {post.user.role.toUpperCase()}
+                      </span>
+                    </small>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleDeletePost(post.id)}
+                  className="btn btn-sm btn-outline-danger"
+                  title="Hapus Postingan"
+                >
+                  <i className="bi bi-trash"></i> Hapus Post
+                </button>
+              </div>
+            </div>
+
+            <div className="post-content mb-3">
+              <p className="text-muted mb-0">{post.content}</p>
+            </div>
+
+            {post.image_path && (
+              <div className="post-image mb-3">
+                <img
+                  src={`http://localhost:8000/storage/${post.image_path}`}
+                  alt="Post Media"
+                  className="img-fluid rounded"
+                  style={{
+                    maxHeight: "400px",
+                    objectFit: "cover",
+                    width: "100%",
+                  }}
+                  onError={(e) => {
+                    console.error("Image load error. Path:", post.image_path);
+                    console.error("Full URL:", e.target.src);
+                    e.target.style.display = "none";
+                  }}
+                />
+              </div>
+            )}
+
+            <div className="comments-section border-top pt-3">
+              <h6 className="fw-semibold mb-3">
+                <i className="bi bi-chat-dots me-2"></i>
+                Komentar ({post.comments.length})
+              </h6>
+
+              {post.comments.length > 0 && (
+                <div className="comments-list">
+                  {post.comments.map((comment) => (
+                    <div
+                      key={comment.id}
+                      className="comment-item p-2 mb-2 rounded bg-light"
+                    >
+                      <div className="d-flex justify-content-between align-items-start">
+                        <div className="flex-grow-1">
+                          <small className="fw-bold text-primary">
+                            {comment.user.name}:
+                          </small>
+                          <span className="ms-2">{comment.content}</span>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="btn btn-sm btn-outline-danger py-0 px-2 ms-2"
+                          title="Hapus Komentar"
+                        >
+                          <i className="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+
   return (
     <div className="admin-wrapper">
       {/* FIXED HEADER */}
@@ -390,7 +558,11 @@ const AdminPanel = () => {
               </h2>
               <p className="text-muted mb-0 small">Komunitas EE Lokal Soe</p>
             </div>
-            <div className="header-right">
+            <div className="header-right d-flex align-items-center gap-3">
+              <span className="text-white fw-semibold">
+                <i className="bi bi-person-circle me-2"></i>
+                {userName}
+              </span>
               <button onClick={handleLogout} className="btn btn-outline-danger">
                 <i className="bi bi-box-arrow-right me-2"></i>
                 Logout
@@ -415,11 +587,22 @@ const AdminPanel = () => {
             </li>
             <li className="nav-item">
               <button
-                className={`nav-link ${activeTab === "schedules" ? "active" : ""}`}
+                className={`nav-link ${
+                  activeTab === "schedules" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("schedules")}
               >
                 <i className="bi bi-calendar3 me-2"></i>
                 Manajemen Jadwal
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                className={`nav-link ${activeTab === "posts" ? "active" : ""}`}
+                onClick={() => setActiveTab("posts")}
+              >
+                <i className="bi bi-megaphone me-2"></i>
+                Manajemen Postingan
               </button>
             </li>
           </ul>
@@ -429,11 +612,32 @@ const AdminPanel = () => {
       {/* MAIN CONTENT */}
       <main className="admin-content">
         <div className="container-fluid">
+          {message && (
+            <div
+              className="alert alert-success alert-dismissible fade show"
+              role="alert"
+            >
+              <i className="bi bi-check-circle me-2"></i>
+              {message}
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setMessage(null)}
+              ></button>
+            </div>
+          )}
           {error && (
-            <div className="alert alert-danger alert-dismissible fade show" role="alert">
+            <div
+              className="alert alert-danger alert-dismissible fade show"
+              role="alert"
+            >
               <i className="bi bi-exclamation-triangle me-2"></i>
               {error}
-              <button type="button" className="btn-close" onClick={() => setError(null)}></button>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setError(null)}
+              ></button>
             </div>
           )}
 
@@ -445,10 +649,15 @@ const AdminPanel = () => {
                     <i className="bi bi-people me-2"></i>
                     Daftar User ({users.length})
                   </>
-                ) : (
+                ) : activeTab === "schedules" ? (
                   <>
                     <i className="bi bi-calendar3 me-2"></i>
                     Daftar Jadwal ({schedules.length})
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-megaphone me-2"></i>
+                    Daftar Postingan ({posts.length})
                   </>
                 )}
               </h5>
@@ -464,6 +673,7 @@ const AdminPanel = () => {
                 <>
                   {activeTab === "users" && <UserTable />}
                   {activeTab === "schedules" && <ScheduleTable />}
+                  {activeTab === "posts" && <PostsTable />}
                 </>
               )}
             </div>
@@ -473,7 +683,11 @@ const AdminPanel = () => {
 
       {/* MODAL EDIT USER */}
       {showEditUserModal && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
@@ -481,12 +695,19 @@ const AdminPanel = () => {
                   <i className="bi bi-pencil-square me-2"></i>
                   Edit User
                 </h5>
-                <button type="button" className="btn-close" onClick={() => setShowEditUserModal(false)}></button>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowEditUserModal(false)}
+                ></button>
               </div>
               <form onSubmit={handleUpdateUser}>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label htmlFor="edit-name" className="form-label fw-semibold">
+                    <label
+                      htmlFor="edit-name"
+                      className="form-label fw-semibold"
+                    >
                       <i className="bi bi-person me-2"></i>
                       Nama
                     </label>
@@ -494,13 +715,18 @@ const AdminPanel = () => {
                       type="text"
                       className="form-control"
                       id="edit-name"
-                      value={editingUser?.name || ''}
-                      onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                      value={editingUser?.name || ""}
+                      onChange={(e) =>
+                        setEditingUser({ ...editingUser, name: e.target.value })
+                      }
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="edit-email" className="form-label fw-semibold">
+                    <label
+                      htmlFor="edit-email"
+                      className="form-label fw-semibold"
+                    >
                       <i className="bi bi-envelope me-2"></i>
                       Email
                     </label>
@@ -508,8 +734,13 @@ const AdminPanel = () => {
                       type="email"
                       className="form-control"
                       id="edit-email"
-                      value={editingUser?.email || ''}
-                      onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                      value={editingUser?.email || ""}
+                      onChange={(e) =>
+                        setEditingUser({
+                          ...editingUser,
+                          email: e.target.value,
+                        })
+                      }
                       required
                     />
                   </div>
@@ -523,13 +754,18 @@ const AdminPanel = () => {
                         {editingUser?.role.toUpperCase()}
                       </span>
                       <small className="text-muted d-block mt-2">
-                        Gunakan tombol "Angkat" atau "Turunkan" untuk mengubah role
+                        Gunakan tombol "Angkat" atau "Turunkan" untuk mengubah
+                        role
                       </small>
                     </div>
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowEditUserModal(false)}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowEditUserModal(false)}
+                  >
                     Batal
                   </button>
                   <button type="submit" className="btn btn-schedule-primary">
@@ -545,7 +781,11 @@ const AdminPanel = () => {
 
       {/* MODAL EDIT SCHEDULE */}
       {showEditScheduleModal && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content">
               <div className="modal-header">
@@ -553,12 +793,19 @@ const AdminPanel = () => {
                   <i className="bi bi-pencil-square me-2"></i>
                   Edit Jadwal
                 </h5>
-                <button type="button" className="btn-close" onClick={() => setShowEditScheduleModal(false)}></button>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowEditScheduleModal(false)}
+                ></button>
               </div>
               <form onSubmit={handleUpdateSchedule}>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label htmlFor="edit-activity" className="form-label fw-semibold">
+                    <label
+                      htmlFor="edit-activity"
+                      className="form-label fw-semibold"
+                    >
                       <i className="bi bi-card-text me-2"></i>
                       Kegiatan
                     </label>
@@ -566,14 +813,22 @@ const AdminPanel = () => {
                       type="text"
                       className="form-control"
                       id="edit-activity"
-                      value={editingSchedule?.activity || ''}
-                      onChange={(e) => setEditingSchedule({ ...editingSchedule, activity: e.target.value })}
+                      value={editingSchedule?.activity || ""}
+                      onChange={(e) =>
+                        setEditingSchedule({
+                          ...editingSchedule,
+                          activity: e.target.value,
+                        })
+                      }
                       required
                     />
                   </div>
                   <div className="row">
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="edit-start" className="form-label fw-semibold">
+                      <label
+                        htmlFor="edit-start"
+                        className="form-label fw-semibold"
+                      >
                         <i className="bi bi-calendar-event me-2"></i>
                         Waktu Mulai
                       </label>
@@ -581,13 +836,21 @@ const AdminPanel = () => {
                         type="datetime-local"
                         className="form-control"
                         id="edit-start"
-                        value={editingSchedule?.scheduled_start || ''}
-                        onChange={(e) => setEditingSchedule({ ...editingSchedule, scheduled_start: e.target.value })}
+                        value={editingSchedule?.scheduled_start || ""}
+                        onChange={(e) =>
+                          setEditingSchedule({
+                            ...editingSchedule,
+                            scheduled_start: e.target.value,
+                          })
+                        }
                         required
                       />
                     </div>
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="edit-end" className="form-label fw-semibold">
+                      <label
+                        htmlFor="edit-end"
+                        className="form-label fw-semibold"
+                      >
                         <i className="bi bi-calendar-check me-2"></i>
                         Waktu Selesai
                       </label>
@@ -595,13 +858,21 @@ const AdminPanel = () => {
                         type="datetime-local"
                         className="form-control"
                         id="edit-end"
-                        value={editingSchedule?.scheduled_end || ''}
-                        onChange={(e) => setEditingSchedule({ ...editingSchedule, scheduled_end: e.target.value })}
+                        value={editingSchedule?.scheduled_end || ""}
+                        onChange={(e) =>
+                          setEditingSchedule({
+                            ...editingSchedule,
+                            scheduled_end: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="edit-location" className="form-label fw-semibold">
+                    <label
+                      htmlFor="edit-location"
+                      className="form-label fw-semibold"
+                    >
                       <i className="bi bi-geo-alt me-2"></i>
                       Lokasi
                     </label>
@@ -609,14 +880,23 @@ const AdminPanel = () => {
                       type="text"
                       className="form-control"
                       id="edit-location"
-                      value={editingSchedule?.location || ''}
-                      onChange={(e) => setEditingSchedule({ ...editingSchedule, location: e.target.value })}
+                      value={editingSchedule?.location || ""}
+                      onChange={(e) =>
+                        setEditingSchedule({
+                          ...editingSchedule,
+                          location: e.target.value,
+                        })
+                      }
                       placeholder="Opsional"
                     />
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowEditScheduleModal(false)}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowEditScheduleModal(false)}
+                  >
                     Batal
                   </button>
                   <button type="submit" className="btn btn-schedule-primary">

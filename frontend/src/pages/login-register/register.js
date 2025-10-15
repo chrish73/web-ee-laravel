@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
+// import axios from "axios";
 import "./style.css";
+import api from "../../api";
 
 function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -32,7 +33,7 @@ function RegisterForm() {
     }
 
     try {
-      const res = await axios.post("http://localhost:8000/api/register", formData);
+      const res = await api.post("/register", formData);
 
       console.log("Register success:", res.data); // debug
       setMessage(res.data.message || "Registration Successful! Please login.");
