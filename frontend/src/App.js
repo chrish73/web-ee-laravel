@@ -19,6 +19,7 @@ import AdminPanel from "./pages/dashboard/AdminPanel";
 import ManageStaffSchedule from "./pages/dashboard/ManageStaffSchedule";
 import StaffDashboard from "./pages/dashboard/StaffDashboard";
 import MemberDashboard from "./pages/dashboard/MemberDashboard";
+import AnalyticsDashboard from "./pages/dashboard/AnalyticsDashboard";
 
 // --- Komponen Dashboard Placeholder ---
 // const StaffDashboard = () => (
@@ -84,8 +85,7 @@ function App() {
       <div className="App">
         <Routes>
           {/* --- RUTE PUBLIK / LANDING PAGE (Root) --- */}
-          <Route path="/" element={<LandingPage />} /> // LandingPage akan
-          menampilkan post publik
+          <Route path="/" element={<LandingPage />} />
           {/* Rute Login dan Register */}
           {/* PASTIKAN login.js dan register.js menyimpan USER ID ke localStorage */}
           <Route path="/login" element={<LoginForm />} />
@@ -122,6 +122,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["anggota", "staf", "admin"]}>
                 <MemberDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/analytics"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AnalyticsDashboard />
               </ProtectedRoute>
             }
           />

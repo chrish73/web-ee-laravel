@@ -1,0 +1,163 @@
+/* Analytics Dashboard Styles */
+.analytics-dashboard {
+  padding: 0;
+}
+
+.stats-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+  height: 100%;
+}
+
+.stats-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.stats-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  font-size: 1.5rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.stats-icon.bg-primary {
+  background: linear-gradient(135deg, #4031c9, #5a45e0);
+}
+
+.stats-icon.bg-info {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+.stats-icon.bg-success {
+  background: linear-gradient(135deg, #10b981, #34d399);
+}
+
+.stats-icon.bg-warning {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.stats-content {
+  flex: 1;
+}
+
+.stats-content h6 {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stats-content h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.stats-content small {
+  font-size: 0.75rem;
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  height: 100%;
+}
+
+.chart-card h6 {
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.chart-card h6 i {
+  color: #4031c9;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stats-card {
+    margin-bottom: 1rem;
+  }
+  
+  .stats-content h3 {
+    font-size: 1.5rem;
+  }
+  
+  .stats-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+  
+  .chart-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Table styling inside chart card */
+.chart-card .table {
+  margin-bottom: 0;
+}
+
+.chart-card .table thead th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.chart-card .table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.chart-card .table tbody td {
+  vertical-align: middle;
+  padding: 1rem;
+}
+
+/* Button group styling */
+.analytics-dashboard .btn-group .btn {
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+}
+
+.analytics-dashboard .btn-group .btn-primary {
+  background: linear-gradient(135deg, #4031c9, #b30404);
+  border: none;
+}
+
+.analytics-dashboard .btn-group .btn-outline-primary {
+  color: #4031c9;
+  border-color: #4031c9;
+}
+
+.analytics-dashboard .btn-group .btn-outline-primary:hover {
+  background-color: #4031c9;
+  color: white;
+}

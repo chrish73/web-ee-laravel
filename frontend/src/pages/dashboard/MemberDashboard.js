@@ -203,14 +203,14 @@ const MemberDashboard = () => {
                       {post.image_path && (
                         <div className="post-image mb-3">
                           <img
-                            src={`http://192.168.1.101:8000/storage/${post.image_path.replace(
+                            src={`http://192.168.1.100:8000/storage/${post.image_path.replace(
                               "public/",
                               ""
                             )}`}
                             alt="Post Media"
                             className="img-fluid rounded"
                             style={{
-                              maxHeight: "400px",
+                              maxHeight: "100%",
                               objectFit: "cover",
                               width: "100%",
                             }}

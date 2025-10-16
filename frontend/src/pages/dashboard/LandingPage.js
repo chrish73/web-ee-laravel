@@ -163,7 +163,7 @@ const LandingPage = () => {
                       {post.image_path && (
                         <div className="post-image mt-3">
                           <img
-                            src={`http://localhost:8000/storage/${post.image_path.replace(
+                            src={`http://192.168.1.100:8000/storage/${post.image_path.replace(
                               "public/",
                               ""
                             )}`}

@@ -16,6 +16,7 @@ class PostController extends Controller
         // Ambil semua post yang ditandai sebagai 'is_public'
         $posts = Post::with(['user:id,name,role', 'comments.user:id,name,role'])
             ->where('is_public', true)
+            ->withCount('views')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -121,3 +122,4 @@ class PostController extends Controller
         return response()->json(['message' => 'Komentar berhasil dihapus.']);
     }
 }
+

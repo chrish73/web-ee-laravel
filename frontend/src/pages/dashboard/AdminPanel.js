@@ -5,6 +5,7 @@ import api from "../../api";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./style-admin.css";
+import AnalyticsDashboard from "./AnalyticsDashboard";
 
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
@@ -22,7 +23,7 @@ const AdminPanel = () => {
     localStorage.getItem("userName") || "Admin"
   );
   const navigate = useNavigate();
-
+  // const [activeTab, setActiveTab] = useState("users");
   const currentUserId = localStorage.getItem("userId");
 
   useEffect(() => {
@@ -489,11 +490,11 @@ const AdminPanel = () => {
             {post.image_path && (
               <div className="post-image mb-3">
                 <img
-                  src={`http://localhost:8000/storage/${post.image_path}`}
+                  src={`http://192.168.1.100:8000/storage/${post.image_path}`}
                   alt="Post Media"
                   className="img-fluid rounded"
                   style={{
-                    maxHeight: "400px",
+                    maxHeight: "100%",
                     objectFit: "cover",
                     width: "100%",
                   }}
@@ -565,7 +566,6 @@ const AdminPanel = () => {
               </span>
               <button onClick={handleLogout} className="btn btn-outline-danger">
                 <i className="bi bi-box-arrow-right me-2"></i>
-                Logout
               </button>
             </div>
           </div>
@@ -605,6 +605,17 @@ const AdminPanel = () => {
                 Manajemen Postingan
               </button>
             </li>
+            <li className="nav-item">
+              <button
+                className={`nav-link ${
+                  activeTab === "analytics" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("analytics")}
+              >
+                <i className="bi bi-graph-up me-2"></i>
+                Analytics
+              </button>
+            </li>
           </ul>
         </div>
       </nav>
@@ -641,43 +652,49 @@ const AdminPanel = () => {
             </div>
           )}
 
-          <div className="content-card">
-            <div className="card-header">
-              <h5 className="mb-0">
-                {activeTab === "users" ? (
-                  <>
-                    <i className="bi bi-people me-2"></i>
-                    Daftar User ({users.length})
-                  </>
-                ) : activeTab === "schedules" ? (
-                  <>
-                    <i className="bi bi-calendar3 me-2"></i>
-                    Daftar Jadwal ({schedules.length})
-                  </>
+          {/* Content Card Wrapper untuk semua tab */}
+          {activeTab !== "analytics" && (
+            <div className="content-card">
+              <div className="card-header">
+                <h5 className="mb-0">
+                  {activeTab === "users" ? (
+                    <>
+                      <i className="bi bi-people me-2"></i>
+                      Daftar User ({users.length})
+                    </>
+                  ) : activeTab === "schedules" ? (
+                    <>
+                      <i className="bi bi-calendar3 me-2"></i>
+                      Daftar Jadwal ({schedules.length})
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-megaphone me-2"></i>
+                      Daftar Postingan ({posts.length})
+                    </>
+                  )}
+                </h5>
+              </div>
+              <div className="card-body">
+                {loading ? (
+                  <div className="text-center py-5">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
                 ) : (
                   <>
-                    <i className="bi bi-megaphone me-2"></i>
-                    Daftar Postingan ({posts.length})
+                    {activeTab === "users" && <UserTable />}
+                    {activeTab === "schedules" && <ScheduleTable />}
+                    {activeTab === "posts" && <PostsTable />}
                   </>
                 )}
-              </h5>
+              </div>
             </div>
-            <div className="card-body">
-              {loading ? (
-                <div className="text-center py-5">
-                  <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {activeTab === "users" && <UserTable />}
-                  {activeTab === "schedules" && <ScheduleTable />}
-                  {activeTab === "posts" && <PostsTable />}
-                </>
-              )}
-            </div>
-          </div>
+          )}
+
+          {/* Analytics Tab - tanpa wrapper content-card karena sudah punya styling sendiri */}
+          {activeTab === "analytics" && <AnalyticsDashboard />}
         </div>
       </main>
 

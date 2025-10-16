@@ -320,10 +320,12 @@ const StaffDashboard = () => {
                   {post.image_path && (
                     <div className="post-image mb-3">
                       <img 
-                        src={`http://localhost:8000/storage/${post.image_path.replace('public/', '')}`} 
+                        src={`http://192.168.1.100:8000/storage/${post.image_path.replace('public/', '')}`} 
                         alt="Post Media" 
                         className="img-fluid rounded"
-                        style={{ maxHeight: '400px', objectFit: 'cover', width: '100%' }}
+                        style={{  maxHeight: "100%",
+                              objectFit: "cover",
+                              width: "100%",}}
                       />
                     </div>
                   )}
@@ -400,7 +402,6 @@ const StaffDashboard = () => {
               </span>
               <button onClick={handleLogout} className="btn btn-outline-danger">
                 <i className="bi bi-box-arrow-right me-2"></i>
-                Logout
               </button>
             </div>
           </div>

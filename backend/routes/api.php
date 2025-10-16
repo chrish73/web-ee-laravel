@@ -11,6 +11,9 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('posts', [PostController::class, 'getPublicPosts']); // Postingan untuk Landing Page/Anggota
 
+// Di luar middleware auth (untuk tracking view publik)
+Route::post('posts/{postId}/view', [App\Http\Controllers\AnalyticsController::class, 'trackPostView']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'user']);
@@ -38,6 +41,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('schedules/{scheduleId}', [AdminController::class, 'updateSchedule']);
         Route::delete('schedules/{scheduleId}', [AdminController::class, 'deleteSchedule']);
         Route::delete('posts/{postId}', [PostController::class, 'deletePost']);
+
+
+        Route::get('analytics/stats', [App\Http\Controllers\AnalyticsController::class, 'getDashboardStats']);
     });
 
     // =======================================================
