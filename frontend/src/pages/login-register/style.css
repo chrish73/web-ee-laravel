@@ -22,12 +22,13 @@ body {
     overflow: hidden; /* Penting agar child mengikuti sudut membulat */
     box-shadow: 0 10px 25px rgba(57, 12, 255, 0.2); /* Bayangan */
     max-height: 90%;
-    background-color: #ffffff;
+    background-color: #ffffff8c;
+    /* background: url('../img/pexels-athena-2962135.jpg') center/cover no-repeat; */
 }
 
 /* KOLOM KIRI (Visual/Latar Belakang Gambar) */
 .left-panel {
-    flex: 1; /* Ambil proporsi 1 */
+    flex: 3; /* Ambil proporsi 1 */
     padding: 40px;
     color: #ffffff;
     display: flex;
@@ -36,7 +37,7 @@ body {
     border-radius: 15px;
     
     /* Ganti ini dengan gambar/gradien seperti di contoh */
-    background: linear-gradient(135deg, #4031c9, #b30404); /* Contoh gradien biru gelap */
+    background: linear-gradient(135deg, #4031c9, #b30404);
     /* Jika ingin menggunakan gambar: */
     /* background: url('path-ke-gambar.jpg') center/cover no-repeat; */
 }
@@ -56,9 +57,9 @@ body {
 
 /* KOLOM KANAN (Formulir Register) */
 .right-panel {
-    flex: 1; /* Ambil proporsi 1 */
+    flex: 5; /* Ambil proporsi 1 */
     padding: 50px;
-    background-color: #ffffff; /* Latar belakang putih untuk formulir */
+    background-color: #ffffff4b; /* Latar belakang putih untuk formulir */
     display: flex;
     flex-direction: column;
 }
@@ -101,8 +102,10 @@ body {
 .right-panel input[type="text"]:focus,
 .right-panel input[type="email"]:focus,
 .right-panel input[type="password"]:focus {
-    border-color: #007bff; /* Warna biru saat fokus */
+    border: none; 
     outline: none;
+    box-shadow: 0 10px 25px rgba(57, 12, 255, 0.575); /* Bayangan */
+    transition: transform 0.5s ease, box-shadow 0.5s ease-out;
 }
 
 /* CHECKBOX & ACCEPT TERMS */

@@ -554,7 +554,7 @@ const AdminPanel = () => {
           <div className="d-flex justify-content-between align-items-center">
             <div className="header-left">
               <h2 className="mb-0">
-                <i className="bi bi-speedometer2 me-2"></i>
+                {/* <i className="bi bi-speedometer2 me-2"></i> */}
                 Admin Dashboard
               </h2>
               <p className="text-muted mb-0 small">Komunitas EE Lokal Soe</p>
