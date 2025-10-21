@@ -3,15 +3,16 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\StreamController;
+use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\ChatController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Rute Publik (tanpa autentikasi)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('posts', [PostController::class, 'getPublicPosts']); // Postingan untuk Landing Page/Anggota
-
-// Di luar middleware auth (untuk tracking view publik)
+Route::get('posts', [PostController::class, 'getPublicPosts']);
 Route::post('posts/{postId}/view', [App\Http\Controllers\AnalyticsController::class, 'trackPostView']);
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -19,56 +20,86 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'user']);
 
     // =======================================================
-    // --- Rute KHUSUS ADMIN (Perlu Autentikasi & Role Admin) ---
+    // --- ADMIN ROUTES ---
     // =======================================================
     Route::prefix('admin')->middleware('role.check:admin')->group(function () {
-        // Manajemen User
+        // User Management
         Route::get('users', [AdminController::class, 'getAllUsers']);
         Route::get('users/{id}', [AdminController::class, 'getUser']);
         Route::put('users/{id}', [AdminController::class, 'updateUser']);
         Route::delete('users/{id}', [AdminController::class, 'deleteUser']);
-
-        // Promosi/Demote
         Route::post('users/{id}/promote', [AdminController::class, 'promoteToStaff']);
         Route::post('users/{id}/demote', [AdminController::class, 'demoteToMember']);
 
-        // Manajemen Jadwal (untuk semua staf)
+        // Schedule Management
         Route::get('schedules', [AdminController::class, 'getAllSchedules']);
-        // Jadwal per staf
         Route::get('staff/{staffId}/schedules', [AdminController::class, 'getStaffSchedules']);
         Route::post('staff/{staffId}/schedules', [AdminController::class, 'createSchedule']);
-        // Update & Delete jadwal
         Route::put('schedules/{scheduleId}', [AdminController::class, 'updateSchedule']);
         Route::delete('schedules/{scheduleId}', [AdminController::class, 'deleteSchedule']);
+
+        // Post Management
         Route::delete('posts/{postId}', [PostController::class, 'deletePost']);
 
-
+        // Analytics
         Route::get('analytics/stats', [App\Http\Controllers\AnalyticsController::class, 'getDashboardStats']);
     });
 
     // =======================================================
-    // --- Rute KHUSUS STAF (Perlu Autentikasi & Role Staf) ---
+    // --- STAFF ROUTES ---
     // =======================================================
     Route::prefix('staf')->middleware('role.check:staf')->group(function () {
-        // Staf: Melihat Jadwalnya Sendiri
-        // Menggunakan endpoint yang sudah ada, tapi memfilter berdasarkan user yang login
-        // ASUMSI: AdminController memiliki method getMySchedules() yang mengembalikan jadwal user yang sedang login.
-        // Jika tidak, Anda perlu membuat method baru di AdminController atau StaffController.
-        // UNTUK SEMENTARA, KITA GUNAKAN ENDPOINT getStaffSchedules DENGAN ID USER SAAT INI (diambil dari token)
-        Route::get('schedules', [AdminController::class, 'getMySchedules']); // Perlu modifikasi AdminController
-
-        // Staf: Kelola Postingan
-        Route::get('posts', [PostController::class, 'getMyPosts']); // Lihat post sendiri
-        Route::post('posts', [PostController::class, 'createPost']); // Posting pengumuman (termasuk untuk landing page)
-        Route::delete('posts/{postId}', [PostController::class, 'deletePost']); // Hapus post
+        Route::get('schedules', [AdminController::class, 'getMySchedules']);
+        Route::get('posts', [PostController::class, 'getMyPosts']);
+        Route::post('posts', [PostController::class, 'createPost']);
+        Route::delete('posts/{postId}', [PostController::class, 'deletePost']);
     });
 
     // =======================================================
-    // --- Rute UMUM (Anggota, Staf, Admin) untuk Interaksi Post ---
+    // --- LIVE STREAMING ROUTES (Admin & Staf) ---
     // =======================================================
-    // Komentar: Semua role yang terautentikasi dapat berkomentar
-    Route::post('posts/{postId}/comments', [PostController::class, 'createComment']);
-    // Hapus Komentar: Hanya user pembuat, staf pembuat post, atau admin yang bisa menghapus
-    Route::delete('comments/{commentId}', [PostController::class, 'deleteComment']);
+    Route::middleware('role.check:staf')->group(function () {
+        Route::post('streams', [StreamController::class, 'createStream']);
+        Route::post('streams/{streamId}/start', [StreamController::class, 'startStream']);
+        Route::post('streams/{streamId}/end', [StreamController::class, 'endStream']);
+        Route::delete('streams/{streamId}', [StreamController::class, 'deleteStream']);
+    });
 
+    // Semua role bisa melihat stream
+    Route::get('streams', [StreamController::class, 'getStreams']);
+    Route::get('streams/{streamId}', [StreamController::class, 'getStream']);
+    Route::put('streams/{streamId}/viewers', [StreamController::class, 'updateViewers']);
+
+    // =======================================================
+    // --- MEETING ROUTES (Admin & Staf) ---
+    // =======================================================
+    Route::middleware('role.check:staf')->group(function () {
+        Route::post('meetings', [MeetingController::class, 'createMeeting']);
+        Route::post('meetings/{meetingId}/start', [MeetingController::class, 'startMeeting']);
+        Route::post('meetings/{meetingId}/end', [MeetingController::class, 'endMeeting']);
+        Route::delete('meetings/{meetingId}', [MeetingController::class, 'deleteMeeting']);
+    });
+
+    // Semua role bisa melihat dan join meeting
+    Route::get('meetings', [MeetingController::class, 'getMeetings']);
+    Route::get('meetings/{meetingId}', [MeetingController::class, 'getMeeting']);
+    Route::post('meetings/{meetingId}/join', [MeetingController::class, 'joinMeeting']);
+    Route::post('meetings/{meetingId}/leave', [MeetingController::class, 'leaveMeeting']);
+
+    // =======================================================
+    // --- CHAT ROUTES (Semua Role) ---
+    // =======================================================
+    Route::post('chats/send', [ChatController::class, 'sendMessage']);
+    Route::get('chats/contacts', [ChatController::class, 'getContacts']);
+    Route::get('chats/users', [ChatController::class, 'getAllUsers']);
+    Route::get('chats/conversation/{userId}', [ChatController::class, 'getConversation']);
+    Route::delete('chats/{chatId}', [ChatController::class, 'deleteMessage']);
+    Route::put('chats/read/{userId}', [ChatController::class, 'markAsRead']);
+    Route::get('chats/unread', [ChatController::class, 'getUnreadCount']);
+
+    // =======================================================
+    // --- POST & COMMENT ROUTES (Semua Role) ---
+    // =======================================================
+    Route::post('posts/{postId}/comments', [PostController::class, 'createComment']);
+    Route::delete('comments/{commentId}', [PostController::class, 'deleteComment']);
 });

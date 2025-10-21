@@ -616,6 +616,33 @@ const AdminPanel = () => {
                 Analytics
               </button>
             </li>
+            <li className="nav-item">
+              <button
+                className="nav-link"
+                onClick={() => navigate('/live-streaming')}
+              >
+                <i className="bi bi-broadcast me-2"></i>
+                Live Stream
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                className="nav-link"
+                onClick={() => navigate('/meetings')}
+              >
+                <i className="bi bi-camera-video me-2"></i>
+                Meetings
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                className="nav-link"
+                onClick={() => navigate('/chat')}
+              >
+                <i className="bi bi-chat-dots me-2"></i>
+                Chat
+              </button>
+            </li>
           </ul>
         </div>
       </nav>
