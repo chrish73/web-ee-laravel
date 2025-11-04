@@ -4,22 +4,16 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     public function up(): void
     {
         Schema::create('streams', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->string('stream_key')->unique();
-            $table->string('stream_url')->nullable();
-            $table->enum('status', ['scheduled', 'live', 'ended'])->default('scheduled');
-            $table->dateTime('scheduled_at')->nullable();
-            $table->dateTime('started_at')->nullable();
-            $table->dateTime('ended_at')->nullable();
-            $table->integer('viewers_count')->default(0);
+            $table->string('youtube_url');
+            $table->string('status')->default('live');
             $table->timestamps();
         });
 

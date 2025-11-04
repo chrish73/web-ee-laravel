@@ -6,31 +6,17 @@ import {
   Navigate,
 } from "react-router-dom";
 
-// Import Landing Page
 import LandingPage from "./pages/dashboard/LandingPage";
-
-// Import existing login/register forms
-// Memperbaiki path: diasumsikan file login/register ada di pages/login-register/
 import LoginForm from "./pages/login-register/login";
 import RegisterForm from "./pages/login-register/register";
-
-// Import NEW Admin components.
 import AdminPanel from "./pages/dashboard/AdminPanel";
 import ManageStaffSchedule from "./pages/dashboard/ManageStaffSchedule";
 import StaffDashboard from "./pages/dashboard/StaffDashboard";
 import MemberDashboard from "./pages/dashboard/MemberDashboard";
 import AnalyticsDashboard from "./pages/dashboard/AnalyticsDashboard";
+import LiveStreamingPage from "./pages/streaming/LiveStreamingPage";
+import PublicStreamingPage from "./pages/streaming/PublicStreamingPage";
 
-// --- Komponen Dashboard Placeholder ---
-// const StaffDashboard = () => (
-//   <h1 className="text-2xl font-bold p-4">Staff Dashboard - Lihat Jadwal</h1>
-// );
-// const MemberDashboard = () => (
-//   <h1 className="text-2xl font-bold p-4">Anggota Dashboard - Akses Umum</h1>
-// );
-
-// --- Private Route dengan Otorisasi Role ---
-// Jika tidak ada token atau role bermasalah, akan dialihkan ke "/" (LandingPage)
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("userRole");
@@ -90,6 +76,9 @@ function App() {
           {/* PASTIKAN login.js dan register.js menyimpan USER ID ke localStorage */}
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
+
+          <Route path="/streams" element={<PublicStreamingPage />} />
+
           {/* ... (Rute /dashboard dan /dashboard/admin) ... */}
           <Route
             path="/dashboard/admin"
@@ -135,6 +124,15 @@ function App() {
           />
           {/* Rute fallback untuk 404, kembali ke Landing Page */}
           <Route path="*" element={<Navigate to="/" replace />} />
+
+          <Route
+            path="/dashboard/streams"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "staf"]}>
+                <LiveStreamingPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </Router>

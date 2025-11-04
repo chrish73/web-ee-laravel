@@ -31,8 +31,14 @@ class MeetingController extends Controller
 
         // Tambahkan participants jika ada
         if (!empty($validatedData['participant_ids'])) {
-            $meeting->participants()->attach($validatedData['participant_ids']);
+            // Memastikan host juga terdaftar sebagai participant (opsional, tapi disarankan)
+            $allParticipantIds = array_unique(array_merge($validatedData['participant_ids'], [$request->user()->id]));
+            $meeting->participants()->attach($allParticipantIds);
+        } else {
+             // Jika tidak ada peserta yang dipilih, tambahkan host saja
+             $meeting->participants()->attach([$request->user()->id]);
         }
+
 
         return response()->json([
             'message' => 'Meeting berhasil dibuat.',
@@ -45,6 +51,7 @@ class MeetingController extends Controller
     {
         $meeting = Meeting::findOrFail($meetingId);
 
+        // Otorisasi: Hanya host atau Admin yang dapat memulai
         if ($meeting->host_id !== $request->user()->id && $request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
@@ -62,6 +69,7 @@ class MeetingController extends Controller
     {
         $meeting = Meeting::findOrFail($meetingId);
 
+        // Otorisasi: Hanya host atau Admin yang dapat mengakhiri
         if ($meeting->host_id !== $request->user()->id && $request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
@@ -109,17 +117,23 @@ class MeetingController extends Controller
         $meeting = Meeting::findOrFail($meetingId);
         $userId = $request->user()->id;
 
-        // Check if user is already a participant
-        if (!$meeting->participants->contains($userId)) {
-            $meeting->participants()->attach($userId, [
-                'joined_at' => Carbon::now()
+        // Cek apakah user termasuk participant. Jika tidak ada, tambahkan.
+        $isParticipant = $meeting->participants->contains($userId);
+
+        if (!$isParticipant) {
+             // Jika belum menjadi participant, tambahkan sebagai participant (secara otomatis mengundang diri sendiri)
+             $meeting->participants()->attach($userId, [
+                'joined_at' => Carbon::now(),
+                'left_at' => null // Pastikan left_at null saat join
             ]);
         } else {
-            // Update joined_at
+            // Jika sudah menjadi participant, update joined_at
             $meeting->participants()->updateExistingPivot($userId, [
-                'joined_at' => Carbon::now()
+                'joined_at' => Carbon::now(),
+                'left_at' => null // Pastikan left_at null saat join
             ]);
         }
+
 
         return response()->json([
             'message' => 'Berhasil join meeting.',
@@ -133,6 +147,7 @@ class MeetingController extends Controller
         $meeting = Meeting::findOrFail($meetingId);
         $userId = $request->user()->id;
 
+        // Tandai waktu keluar meeting
         $meeting->participants()->updateExistingPivot($userId, [
             'left_at' => Carbon::now()
         ]);
@@ -181,7 +196,9 @@ class MeetingController extends Controller
 
         // Update participants jika ada
         if (isset($validatedData['participant_ids'])) {
-            $meeting->participants()->sync($validatedData['participant_ids']);
+            // Memastikan host juga tetap terdaftar
+            $allParticipantIds = array_unique(array_merge($validatedData['participant_ids'], [$request->user()->id]));
+            $meeting->participants()->sync($allParticipantIds);
         }
 
         return response()->json([

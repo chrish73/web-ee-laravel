@@ -203,7 +203,7 @@ const MemberDashboard = () => {
                       {post.image_path && (
                         <div className="post-image mb-3">
                           <img
-                            src={`http://192.168.1.100:8000/storage/${post.image_path.replace(
+                            src={`http://localhost:8000/storage/${post.image_path.replace(
                               "public/",
                               ""
                             )}`}

@@ -8,17 +8,18 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RoleCheck
 {
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        // 1. Pastikan pengguna sudah terautentikasi (seharusnya sudah dijamin oleh auth:sanctum, tapi kita cek lagi)
+        // Pastikan user sudah login
         if (! $request->user()) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        // 2. Periksa apakah role pengguna cocok dengan role yang diperlukan
-        // Perhatian: Properti 'role' harus ada di objek user Anda.
-        if ($request->user()->role !== $role) {
-            return response()->json(['message' => 'Forbidden. Access restricted to ' . $role . ' role.'], 403);
+        // Periksa apakah role user termasuk dalam daftar role yang diizinkan
+        if (! in_array($request->user()->role, $roles)) {
+            return response()->json([
+                'message' => 'Forbidden. Access restricted to roles: ' . implode(', ', $roles),
+            ], 403);
         }
 
         return $next($request);

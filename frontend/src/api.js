@@ -3,7 +3,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://192.168.1.100:8000/api',// Sesuaikan dengan port Laravel Anda
+    baseURL: 'http://localhost:8000/api', // Sesuaikan dengan port Laravel Anda
     withCredentials: true, // PENTING: Untuk mengirim cookie dan header Auth dengan benar
     headers: {
         'Accept': 'application/json',

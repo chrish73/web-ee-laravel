@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./style-admin.css";
 import AnalyticsDashboard from "./AnalyticsDashboard";
+import LiveStreamingPage from "../streaming/LiveStreamingPage";
 
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
@@ -490,7 +491,7 @@ const AdminPanel = () => {
             {post.image_path && (
               <div className="post-image mb-3">
                 <img
-                  src={`http://192.168.1.100:8000/storage/${post.image_path}`}
+                  src={`http://localhost:8000/storage/${post.image_path}`}
                   alt="Post Media"
                   className="img-fluid rounded"
                   style={{
@@ -573,8 +574,12 @@ const AdminPanel = () => {
       </header>
 
       {/* FIXED NAVIGATION TABS */}
-      <nav className="admin-nav">
-        <div className="container-fluid">
+      <nav className="admin-nav liquidGlass-wrapper">
+        <div className="liquidGlass-effect"></div>
+        <div className="liquidGlass-tint"></div>
+        <div className="liquidGlass-shine"></div>
+
+        <div className="container-fluid liquidGlass-text">
           <ul className="nav nav-pills">
             <li className="nav-item">
               <button
@@ -619,7 +624,7 @@ const AdminPanel = () => {
             <li className="nav-item">
               <button
                 className="nav-link"
-                onClick={() => navigate('/live-streaming')}
+                onClick={() => navigate("/dashboard/streams")}
               >
                 <i className="bi bi-broadcast me-2"></i>
                 Live Stream
@@ -628,17 +633,14 @@ const AdminPanel = () => {
             <li className="nav-item">
               <button
                 className="nav-link"
-                onClick={() => navigate('/meetings')}
+                onClick={() => navigate("/meetings")}
               >
                 <i className="bi bi-camera-video me-2"></i>
                 Meetings
               </button>
             </li>
             <li className="nav-item">
-              <button
-                className="nav-link"
-                onClick={() => navigate('/chat')}
-              >
+              <button className="nav-link" onClick={() => navigate("/chat")}>
                 <i className="bi bi-chat-dots me-2"></i>
                 Chat
               </button>
@@ -722,6 +724,7 @@ const AdminPanel = () => {
 
           {/* Analytics Tab - tanpa wrapper content-card karena sudah punya styling sendiri */}
           {activeTab === "analytics" && <AnalyticsDashboard />}
+          {activeTab === "streaming" && <LiveStreamingPage />}
         </div>
       </main>
 
@@ -955,13 +958,17 @@ const AdminPanel = () => {
       )}
 
       {/* FOOTER */}
-      <footer className="admin-footer">
-        <div className="container-fluid">
-          <div className="text-center">
-            <small className="text-muted">
-              &copy; 2025 Komunitas EE Lokal Soe. All rights reserved.
-            </small>
-          </div>
+      <footer className="admin-footer liquidGlass-wrapper">
+        {/* Layer efek kaca */}
+        <div className="liquidGlass-effect"></div>
+        <div className="liquidGlass-tint"></div>
+        <div className="liquidGlass-shine"></div>
+
+        {/* Isi footer */}
+        <div className="container-fluid liquidGlass-text text-center">
+          <small>
+            &copy; 2025 Komunitas EE Lokal Soe. All rights reserved.
+          </small>
         </div>
       </footer>
     </div>

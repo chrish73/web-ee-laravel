@@ -14,31 +14,9 @@ class Stream extends Model
         'user_id',
         'title',
         'description',
-        'stream_key',
-        'stream_url',
+        'youtube_url',
         'status',
-        'scheduled_at',
-        'started_at',
-        'ended_at',
-        'viewers_count',
     ];
-
-    protected $casts = [
-        'scheduled_at' => 'datetime',
-        'started_at' => 'datetime',
-        'ended_at' => 'datetime',
-    ];
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($stream) {
-            if (empty($stream->stream_key)) {
-                $stream->stream_key = Str::random(32);
-            }
-        });
-    }
 
     public function user()
     {
