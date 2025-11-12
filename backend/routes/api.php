@@ -19,6 +19,12 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('posts', [PostController::class, 'getPublicPosts']);
 Route::post('posts/{postId}/view', [App\Http\Controllers\AnalyticsController::class, 'trackPostView']);
 
+//streaming public
+Route::prefix('public')->group(function () {
+    Route::get('streams', [StreamController::class, 'getStreams']);
+    Route::get('streams/{id}', [StreamController::class, 'getStream']);
+});
+
 
 // =======================================================
 // --- Rute Terproteksi (Wajib Autentikasi) ---
@@ -52,31 +58,12 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // --- STAFF ROUTES (Hanya Staf/Admin) ---
-    Route::prefix('staf')->middleware('role.check:staf')->group(function () {
+    Route::prefix('staf')->middleware('role.check:staf,admin')->group(function () {
         Route::get('schedules', [AdminController::class, 'getMySchedules']);
         Route::get('posts', [PostController::class, 'getMyPosts']);
         Route::post('posts', [PostController::class, 'createPost']);
         Route::delete('posts/{postId}', [PostController::class, 'deletePost']);
     });
-
-
-
-    // --- MEETING ROUTES (Semua Role bisa melihat dan Join) ---
-    // Aksi Administratif (Host: Staf/Admin)
-    Route::middleware('role.check:staf')->group(function () {
-        Route::post('meetings', [MeetingController::class, 'createMeeting']);
-        Route::post('meetings/{meetingId}/start', [MeetingController::class, 'startMeeting']);
-        Route::post('meetings/{meetingId}/end', [MeetingController::class, 'endMeeting']);
-        Route::delete('meetings/{meetingId}', [MeetingController::class, 'deleteMeeting']);
-        Route::put('meetings/{meetingId}', [MeetingController::class, 'updateMeeting']);
-    });
-
-    // Aksi Umum (Semua Role)
-    Route::get('meetings', [MeetingController::class, 'getMeetings']);
-    Route::get('meetings/{meetingId}', [MeetingController::class, 'getMeeting']);
-    Route::post('meetings/{meetingId}/join', [MeetingController::class, 'joinMeeting']);
-    Route::post('meetings/{meetingId}/leave', [MeetingController::class, 'leaveMeeting']);
-
 
     // --- CHAT ROUTES (Semua Role - Pribadi) ---
     Route::post('chats/send', [ChatController::class, 'sendMessage']);
@@ -92,13 +79,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('comments/{commentId}', [PostController::class, 'deleteComment']);
 });
 
-Route::prefix('public')->group(function () {
-    Route::get('streams', [StreamController::class, 'getStreams']);
-    Route::get('streams/{id}', [StreamController::class, 'getStream']);
-});
 
 Route::middleware(['auth:sanctum', 'role.check:staf,admin'])->group(function () {
     Route::post('streams', [StreamController::class, 'createStream']);
     Route::delete('/streams/{id}', [StreamController::class, 'deleteStream']);
 });
+
 
