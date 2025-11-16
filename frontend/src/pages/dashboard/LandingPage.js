@@ -11,8 +11,10 @@ const LandingPage = () => {
   const userRole = localStorage.getItem("userRole");
   const [publicPosts, setPublicPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  
 
   useEffect(() => {
+    // Redirect logic for logged-in users
     if (token && userRole) {
       switch (userRole) {
         case "admin":
@@ -31,6 +33,7 @@ const LandingPage = () => {
   }, [token, userRole, navigate]);
 
   useEffect(() => {
+    // Fetch posts only if user is not logged in (to display public content)
     const fetchPublicPosts = async () => {
       setLoading(true);
       try {
@@ -53,30 +56,37 @@ const LandingPage = () => {
           <div className="d-flex justify-content-between align-items-center">
             <div className="header-left">
               <h2 className="mb-0">
-                <i className="bi bi-house-door me-2"></i>
-                Selamat Datang
+                EE Lokal Soe
               </h2>
-              <p className="text-muted mb-0 small">Komunitas EE Lokal Soe</p>
+              <p className="text-muted mb-0 small">Selamat Datang</p>
             </div>
             <div className="header-right d-flex gap-3">
-              <button
-                onClick={() => navigate("/register")}
-                className="btn btn-outline-light"
-              >
-                <i className="bi bi-person-add me-2"></i>
-                Daftar
-              </button>
-              <button
-                onClick={() => navigate("/login")}
-                className="btn btn-outline-light"
-              >
-                <i className="bi bi-box-arrow-in-right me-2"></i>
-                Login
-              </button>
             </div>
           </div>
         </div>
       </header>
+
+      {/* FIXED NAVIGATION BAR (New: Using Liquid Glass style from AdminPanel) */}
+      <nav className="admin-nav liquidGlass-wrapper">
+        <div className="liquidGlass-effect"></div>
+        <div className="liquidGlass-tint"></div>
+        <div className="liquidGlass-shine"></div>
+
+        <div className="container-fluid liquidGlass-text">
+          <ul className="nav nav-pills">
+            <li className="nav-item">
+              {/* Note: Landing page uses buttons that trigger navigation, not conditional tabs */}
+              <button
+                onClick={() => navigate("/streams")}
+                className="nav-link"
+              >
+                <i className="bi bi-broadcast me-2"></i>
+                Live Stream
+              </button>
+            </li>
+          </ul>
+        </div>
+      </nav>
 
       {/* MAIN CONTENT */}
       <main className="admin-content">

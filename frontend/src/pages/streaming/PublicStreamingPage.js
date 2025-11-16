@@ -31,7 +31,7 @@ const PublicStreamingPage = () => {
     );
 
   return (
-    <div className="container mt-5 mb-5">
+    <div className="row container mt-5 mb-5">
       <h2 className="text-center mb-4 fw-bold">
         <i className="bi bi-broadcast me-2"></i> Live Streaming
       </h2>

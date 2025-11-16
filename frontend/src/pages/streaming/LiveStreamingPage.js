@@ -102,36 +102,6 @@ const LiveStreamingPage = () => {
 
   return (
     <div className="admin-wrapper">
-      {/* HEADER */}
-      <header className="admin-header">
-        <div className="container-fluid">
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="header-left">
-              <h2 className="mb-0">
-                <i className="bi bi-broadcast me-2"></i>
-                Live Streaming
-              </h2>
-              <p className="text-muted mb-0 small">Komunitas EE Lokal Soe</p>
-            </div>
-            <div className="header-right d-flex align-items-center gap-3">
-              <button
-                onClick={() => navigate(-1)}
-                className="btn btn-outline-light"
-              >
-                <i className="bi bi-arrow-left me-2"></i>Kembali
-              </button>
-              <span className="text-white fw-semibold">
-                <i className="bi bi-person-circle me-2"></i>
-                {userName}
-              </span>
-              <button onClick={handleLogout} className="btn btn-outline-danger">
-                <i className="bi bi-box-arrow-right"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* MAIN CONTENT */}
       <main className="admin-content" style={{ marginTop: "100px" }}>
         <div className="container-fluid">

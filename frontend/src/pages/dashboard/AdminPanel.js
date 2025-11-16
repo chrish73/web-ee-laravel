@@ -7,6 +7,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./style-admin.css";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import LiveStreamingPage from "../streaming/LiveStreamingPage";
+import ChatPage from "../chat/ChatPage";
 
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
@@ -623,8 +624,10 @@ const AdminPanel = () => {
             </li>
             <li className="nav-item">
               <button
-                className="nav-link"
-                onClick={() => navigate("/dashboard/streams")}
+                className={`nav-link ${
+                  activeTab === "streaming" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("streaming")}
               >
                 <i className="bi bi-broadcast me-2"></i>
                 Live Stream
@@ -632,17 +635,13 @@ const AdminPanel = () => {
             </li>
             <li className="nav-item">
               <button
-                className="nav-link"
-                onClick={() => navigate("/meetings")}
+                className={`nav-link ${
+                  activeTab === "streaming" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("chat")}
               >
-                <i className="bi bi-camera-video me-2"></i>
-                Meetings
-              </button>
-            </li>
-            <li className="nav-item">
-              <button className="nav-link" onClick={() => navigate("/chat")}>
-                <i className="bi bi-chat-dots me-2"></i>
-                Chat
+                <i class="bi bi-person-rolodex me-2"></i>
+                Daftar Kontak
               </button>
             </li>
           </ul>
@@ -681,8 +680,8 @@ const AdminPanel = () => {
             </div>
           )}
 
-          {/* Content Card Wrapper untuk semua tab */}
-          {activeTab !== "analytics" && (
+          {/* Content Card Wrapper untuk semua tab data (users, schedules, posts) */}
+          {activeTab !== "analytics" && activeTab !== "streaming" && (
             <div className="content-card">
               <div className="card-header">
                 <h5 className="mb-0">
@@ -725,6 +724,7 @@ const AdminPanel = () => {
           {/* Analytics Tab - tanpa wrapper content-card karena sudah punya styling sendiri */}
           {activeTab === "analytics" && <AnalyticsDashboard />}
           {activeTab === "streaming" && <LiveStreamingPage />}
+          {activeTab === "chat" && <ChatPage/>}
         </div>
       </main>
 
